@@ -6,15 +6,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.adaptadores.entrada import rutas_fotos, rutas_inmuebles, rutas_usuarios
+from app.adaptadores.entrada import rutas_fotos, rutas_inmuebles, rutas_solicitudes, rutas_usuarios
 from app.dominio.errores import Conflicto, ErrorDominio, NoAutorizado, NoEncontrado
 from app.infraestructura.base_datos import crear_tablas
 from app.infraestructura.config import obtener_config
 
-app = FastAPI(title="UniArrienda API", version="0.1.0",
+app = FastAPI(title="UniArrienda API", version="0.2.0",
               description="Backend con arquitectura hexagonal para la app de arriendos universitarios.")
 
-# Permite que React (navegador) llame a la API. En producción se restringe al dominio real.
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 crear_tablas()
@@ -25,9 +24,9 @@ app.mount("/media", StaticFiles(directory=carpeta_media), name="media")
 app.include_router(rutas_usuarios.router)
 app.include_router(rutas_inmuebles.router)
 app.include_router(rutas_fotos.router)
+app.include_router(rutas_solicitudes.router)
 
 
-# Traduce los errores del dominio a respuestas HTTP con un mensaje claro: {"detail": "..."}
 @app.exception_handler(ErrorDominio)
 def manejar_error_dominio(_: Request, error: ErrorDominio):
     codigo = 400

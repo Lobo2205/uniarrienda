@@ -67,3 +67,36 @@ class RequisitoORM(Base):
     id_requisito: Mapped[int] = mapped_column(primary_key=True)
     inmueble_id: Mapped[int] = mapped_column(ForeignKey("inmuebles.id_inmueble", ondelete="CASCADE"))
     descripcion: Mapped[str] = mapped_column(String(300))
+
+
+class SolicitudORM(Base):
+    __tablename__ = "solicitudes"
+    id_solicitud: Mapped[int] = mapped_column(primary_key=True)
+    estudiante_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id_usuario"), index=True)
+    inmueble_id: Mapped[int] = mapped_column(ForeignKey("inmuebles.id_inmueble"), index=True)
+    estado: Mapped[str] = mapped_column(String(20), default="pendiente", index=True)
+    fecha_solicitud: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class ReservaORM(Base):
+    __tablename__ = "reservas"
+    id_reserva: Mapped[int] = mapped_column(primary_key=True)
+    solicitud_id: Mapped[int] = mapped_column(ForeignKey("solicitudes.id_solicitud"), unique=True)
+    inmueble_id: Mapped[int] = mapped_column(ForeignKey("inmuebles.id_inmueble"), index=True)
+    estudiante_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id_usuario"))
+    arrendador_id: Mapped[int] = mapped_column(ForeignKey("usuarios.id_usuario"))
+    fecha_inicio: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    monto: Mapped[int] = mapped_column(Integer)
+    estado: Mapped[str] = mapped_column(String(20), default="activa")
+    fecha_creacion: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class PagoORM(Base):
+    __tablename__ = "pagos"
+    id_pago: Mapped[int] = mapped_column(primary_key=True)
+    reserva_id: Mapped[int] = mapped_column(ForeignKey("reservas.id_reserva"), unique=True)
+    monto: Mapped[int] = mapped_column(Integer)
+    pasarela: Mapped[str] = mapped_column(String(30), default="stripe")
+    referencia: Mapped[Optional[str]] = mapped_column(String(200), nullable=True, index=True)
+    estado: Mapped[str] = mapped_column(String(20), default="sin_iniciar")
+    fecha_pago: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)

@@ -10,8 +10,14 @@ class Configuracion(BaseSettings):
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/uniarrienda"
     jwt_secret: str = "solo-para-desarrollo-cambiar"
     jwt_minutos: int = 1440
-    carpeta_media: str = "media"           # donde se guardan las fotos subidas
-    url_publica: str = "http://localhost:8000"  # para armar la URL de las fotos
+    carpeta_media: str = "media"
+    url_publica: str = "http://localhost:8000"
+
+    # Stripe (modo prueba). Si está vacío, se usa la pasarela falsa.
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_url_exito: str = "http://localhost:8000/pagos/exito"
+    stripe_url_cancelar: str = "http://localhost:8000/pagos/cancelado"
 
 
 @lru_cache
