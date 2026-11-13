@@ -73,9 +73,15 @@ def test_flujo_solicitud_reserva_pago():
     datos = r.json()
     assert datos["url_pago"].endswith(f"referencia={datos['referencia']}")
 
-    # Pago queda pendiente
+    # Pago queda pendiente y el estudiante ve la URL para pagar desde su app
     rp = cliente.get(f"/reservas/{id_reserva}", headers=est).json()
     assert rp["pago"]["estado"] == "pendiente"
+    assert rp["url_pago"] == datos["url_pago"]
+    assert cliente.get(f"/reservas/por-solicitud/{id_sol}", headers=est).json()["reserva"]["id_reserva"] == id_reserva
+    mias = cliente.get("/solicitudes/mias", headers=est).json()
+    assert mias[0]["inmueble_titulo"] == "Habitación en Chapinero" and mias[0]["id_reserva"] == id_reserva
+    recibidas = cliente.get("/solicitudes/recibidas", headers=arr).json()
+    assert {x["estudiante_nombre"] for x in recibidas} == {"Prueba"}
 
     # Simular el pago entrando a la URL falsa
     r = cliente.get(datos["url_pago"].replace("http://localhost:8000", ""))
@@ -85,6 +91,7 @@ def test_flujo_solicitud_reserva_pago():
     rp = cliente.get(f"/reservas/{id_reserva}", headers=est).json()
     assert rp["pago"]["estado"] == "aprobado"
     assert rp["reserva"]["estado"] == "confirmada"
+    assert rp["url_pago"] is None
     assert cliente.get(f"/inmuebles/{id_inm}").json()["disponibilidad"] is False
     # Ya no se puede solicitar
     assert cliente.get("/inmuebles").json() == []

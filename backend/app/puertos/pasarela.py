@@ -23,5 +23,9 @@ class PasarelaPagos(ABC):
     def crear_sesion(self, monto: int, moneda: str, descripcion: str, metadata: dict) -> SesionPago: ...
 
     @abstractmethod
+    def obtener_url(self, referencia: str) -> Optional[str]:
+        """URL de pago de una sesión ya creada (para que el estudiante pague desde su app)."""
+
+    @abstractmethod
     def leer_evento(self, cuerpo: bytes, firma: str) -> Optional[ResultadoWebhook]:
         """Verifica la firma del webhook y devuelve el resultado, o None si no nos interesa."""

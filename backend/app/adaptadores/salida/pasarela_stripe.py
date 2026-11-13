@@ -33,6 +33,13 @@ class PasarelaStripe(PasarelaPagos):
         )
         return SesionPago(referencia=sesion.id, url_pago=sesion.url)
 
+    def obtener_url(self, referencia: str) -> Optional[str]:
+        try:
+            sesion = self._stripe.checkout.Session.retrieve(referencia)
+        except Exception:
+            return None
+        return sesion.url if sesion.status == "open" else None
+
     def leer_evento(self, cuerpo: bytes, firma: str) -> Optional[ResultadoWebhook]:
         try:
             evento = self._stripe.Webhook.construct_event(cuerpo, firma, self.secreto_webhook)
@@ -64,6 +71,9 @@ class PasarelaFalsa(PasarelaPagos):
         ref = f"fake_{self._contador}_{metadata.get('id_pago', 0)}"
         url = f"{self.url_base}/pagos/falso/confirmar?referencia={ref}"
         return SesionPago(referencia=ref, url_pago=url)
+
+    def obtener_url(self, referencia: str) -> Optional[str]:
+        return f"{self.url_base}/pagos/falso/confirmar?referencia={referencia}"
 
     def leer_evento(self, cuerpo: bytes, firma: str) -> Optional[ResultadoWebhook]:
         datos = json.loads(cuerpo.decode() or "{}")
